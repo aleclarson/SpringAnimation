@@ -28,7 +28,7 @@ type.optionDefaults = {
   restVelocity: 0.001
 };
 
-type.definedFrozenValues({
+type.defineFrozenValues({
   endValue: function(options) {
     return options.endValue;
   },
@@ -57,7 +57,7 @@ type.defineValues({
 type.initInstance(function(options) {
   var spring;
   if ((options.bounciness != null) || (options.speed != null)) {
-    assert(options.tension === void 0 && options.friction === void 0, {
+    assert((options.tension === void 0) && (options.friction === void 0), {
       reason: "Must only define 'bounciness & speed' or 'tension & friction'!"
     });
     spring = SpringConfig.fromBouncinessAndSpeed(options.bounciness != null ? options.bounciness : options.bounciness = 8, options.speed != null ? options.speed : options.speed = 12);

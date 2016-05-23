@@ -25,7 +25,7 @@ type.optionDefaults =
   restDistance: 0.01
   restVelocity: 0.001
 
-type.definedFrozenValues
+type.defineFrozenValues
 
   endValue: (options) -> options.endValue
 
@@ -53,7 +53,7 @@ type.initInstance (options) ->
 
   if options.bounciness? or options.speed?
 
-    assert options.tension is undefined and options.friction is undefined,
+    assert (options.tension is undefined) and (options.friction is undefined),
       reason: "Must only define 'bounciness & speed' or 'tension & friction'!"
 
     spring = SpringConfig.fromBouncinessAndSpeed(
