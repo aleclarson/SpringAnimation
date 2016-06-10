@@ -1,6 +1,7 @@
 
 { Animation } = require "Animated"
 
+getArgProp = require "getArgProp"
 Type = require "Type"
 
 SpringConfig = require "./SpringConfig"
@@ -27,15 +28,15 @@ type.optionDefaults =
 
 type.defineFrozenValues
 
-  endValue: (options) -> options.endValue
+  endValue: getArgProp "endValue"
 
-  startVelocity: (options) -> options.velocity
+  startVelocity: getArgProp "velocity"
 
-  clamp: (options) -> options.clamp
+  clamp: getArgProp "clamp"
 
-  restDistance: (options) -> options.restDistance
+  restDistance: getArgProp "restDistance"
 
-  restVelocity: (options) -> options.restVelocity
+  restVelocity: getArgProp "restVelocity"
 
 type.defineValues
 
@@ -75,6 +76,8 @@ type.defineMethods
   getInternalState: ->
     { @value, @velocity, @time }
 
+type.overrideMethods
+
   __onStart: ->
 
     if @__previousAnimation instanceof SpringAnimation
@@ -90,7 +93,7 @@ type.defineMethods
     if @startVelocity?
       @velocity = @startVelocity
 
-    @__recomputeValue()
+    @_recomputeValue()
 
   __computeValue: ->
 

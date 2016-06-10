@@ -1,6 +1,8 @@
-var Animation, SpringAnimation, SpringConfig, Type, type;
+var Animation, SpringAnimation, SpringConfig, Type, getArgProp, type;
 
 Animation = require("Animated").Animation;
+
+getArgProp = require("getArgProp");
 
 Type = require("Type");
 
@@ -29,21 +31,11 @@ type.optionDefaults = {
 };
 
 type.defineFrozenValues({
-  endValue: function(options) {
-    return options.endValue;
-  },
-  startVelocity: function(options) {
-    return options.velocity;
-  },
-  clamp: function(options) {
-    return options.clamp;
-  },
-  restDistance: function(options) {
-    return options.restDistance;
-  },
-  restVelocity: function(options) {
-    return options.restVelocity;
-  }
+  endValue: getArgProp("endValue"),
+  startVelocity: getArgProp("velocity"),
+  clamp: getArgProp("clamp"),
+  restDistance: getArgProp("restDistance"),
+  restVelocity: getArgProp("restVelocity")
 });
 
 type.defineValues({
@@ -75,7 +67,10 @@ type.defineMethods({
       velocity: this.velocity,
       time: this.time
     };
-  },
+  }
+});
+
+type.overrideMethods({
   __onStart: function() {
     var internalState;
     if (this.__previousAnimation instanceof SpringAnimation) {
@@ -90,7 +85,7 @@ type.defineMethods({
     if (this.startVelocity != null) {
       this.velocity = this.startVelocity;
     }
-    return this.__recomputeValue();
+    return this._recomputeValue();
   },
   __computeValue: function() {
     var MAX_STEPS, TIMESTEP_MSEC, aAcceleration, aVelocity, bAcceleration, bVelocity, cAcceleration, cVelocity, dAcceleration, dVelocity, dvdt, dxdt, i, j, now, numSteps, ref, ref1, step, tempValue, tempVelocity, value, velocity;
