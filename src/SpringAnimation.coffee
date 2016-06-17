@@ -78,7 +78,7 @@ type.defineMethods
 
 type.overrideMethods
 
-  __onStart: ->
+  __didStart: ->
 
     if @__previousAnimation instanceof SpringAnimation
       internalState = @__previousAnimation.getInternalState()
@@ -157,10 +157,10 @@ type.overrideMethods
 
     return value
 
-  __didComputeValue: (value) ->
+  __didUpdate: (value) ->
 
     # A listener might have stopped us in '_onUpdate'.
-    return unless @_hasEnded
+    return unless @hasEnded
 
     shouldClamp = no
     if @clamp and @_tension isnt 0
@@ -176,7 +176,7 @@ type.overrideMethods
     if isRestingVelocity and isRestingDistance
       return @finish()
 
-  __onEnd: (finished) ->
+  __didEnd: (finished) ->
     return unless finished
     return if @_tension is 0
     @_onUpdate @endValue

@@ -71,7 +71,7 @@ type.defineMethods({
 });
 
 type.overrideMethods({
-  __onStart: function() {
+  __didStart: function() {
     var internalState;
     if (this.__previousAnimation instanceof SpringAnimation) {
       internalState = this.__previousAnimation.getInternalState();
@@ -127,9 +127,9 @@ type.overrideMethods({
     this.velocity = velocity;
     return value;
   },
-  __didComputeValue: function(value) {
+  __didUpdate: function(value) {
     var isRestingDistance, isRestingVelocity, shouldClamp;
-    if (!this._hasEnded) {
+    if (!this.hasEnded) {
       return;
     }
     shouldClamp = false;
@@ -149,7 +149,7 @@ type.overrideMethods({
       return this.finish();
     }
   },
-  __onEnd: function(finished) {
+  __didEnd: function(finished) {
     if (!finished) {
       return;
     }
