@@ -1,7 +1,7 @@
 
 { Animation } = require "Animated"
 
-getArgProp = require "getArgProp"
+fromArgs = require "fromArgs"
 Type = require "Type"
 
 SpringConfig = require "./SpringConfig"
@@ -28,15 +28,15 @@ type.optionDefaults =
 
 type.defineFrozenValues
 
-  endValue: getArgProp "endValue"
+  endValue: fromArgs "endValue"
 
-  startVelocity: getArgProp "velocity"
+  startVelocity: fromArgs "velocity"
 
-  clamp: getArgProp "clamp"
+  clamp: fromArgs "clamp"
 
-  restDistance: getArgProp "restDistance"
+  restDistance: fromArgs "restDistance"
 
-  restVelocity: getArgProp "restVelocity"
+  restVelocity: fromArgs "restVelocity"
 
 type.defineValues
 
