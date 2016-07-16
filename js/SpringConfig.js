@@ -68,4 +68,4 @@ b3Nobounce = function(tension) {
   return b3Friction3(tension);
 };
 
-//# sourceMappingURL=../../map/src/SpringConfig.map
+//# sourceMappingURL=map/SpringConfig.map

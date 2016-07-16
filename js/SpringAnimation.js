@@ -1,8 +1,8 @@
-var Animation, SpringAnimation, SpringConfig, Type, getArgProp, type;
+var Animation, SpringAnimation, SpringConfig, Type, fromArgs, type;
 
 Animation = require("Animated").Animation;
 
-getArgProp = require("getArgProp");
+fromArgs = require("fromArgs");
 
 Type = require("Type");
 
@@ -31,11 +31,11 @@ type.optionDefaults = {
 };
 
 type.defineFrozenValues({
-  endValue: getArgProp("endValue"),
-  startVelocity: getArgProp("velocity"),
-  clamp: getArgProp("clamp"),
-  restDistance: getArgProp("restDistance"),
-  restVelocity: getArgProp("restVelocity")
+  endValue: fromArgs("endValue"),
+  startVelocity: fromArgs("velocity"),
+  clamp: fromArgs("clamp"),
+  restDistance: fromArgs("restDistance"),
+  restVelocity: fromArgs("restVelocity")
 });
 
 type.defineValues({
@@ -162,4 +162,4 @@ type.overrideMethods({
 
 module.exports = SpringAnimation = type.build();
 
-//# sourceMappingURL=../../map/src/SpringAnimation.map
+//# sourceMappingURL=map/SpringAnimation.map
