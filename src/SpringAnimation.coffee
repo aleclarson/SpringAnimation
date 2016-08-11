@@ -1,7 +1,6 @@
 
-{ Animation } = require "Animated"
+{Animation} = require "Animated"
 
-fromArgs = require "fromArgs"
 Type = require "Type"
 
 SpringConfig = require "./SpringConfig"
@@ -10,33 +9,28 @@ type = Type "SpringAnimation"
 
 type.inherits Animation
 
-type.optionTypes =
-  endValue: Number
-  velocity: Number
-  bounciness: Number.Maybe
-  speed: Number.Maybe
-  tension: Number.Maybe
-  friction: Number.Maybe
-  clamp: Boolean
-  restDistance: Number
-  restVelocity: Number
+type.defineOptions
+  endValue: Number.isRequired
+  velocity: Number.isRequired
+  bounciness: Number
+  speed: Number
+  tension: Number
+  friction: Number
+  clamp: Boolean.withDefault no
+  restDistance: Number.withDefault 0.01
+  restVelocity: Number.withDefault 0.001
 
-type.optionDefaults =
-  clamp: no
-  restDistance: 0.01
-  restVelocity: 0.001
+type.defineFrozenValues (options) ->
 
-type.defineFrozenValues
+  endValue: options.endValue
 
-  endValue: fromArgs "endValue"
+  startVelocity: options.velocity
 
-  startVelocity: fromArgs "velocity"
+  clamp: options.clamp
 
-  clamp: fromArgs "clamp"
+  restDistance: options.restDistance
 
-  restDistance: fromArgs "restDistance"
-
-  restVelocity: fromArgs "restVelocity"
+  restVelocity: options.restVelocity
 
 type.defineValues
 
@@ -68,13 +62,20 @@ type.initInstance (options) ->
       options.friction ?= 7
     )
 
-  @_tension = spring.tension
-  @_friction = spring.friction
+  @tension = spring.tension
+  @friction = spring.friction
 
 type.defineMethods
 
   getInternalState: ->
     { @value, @velocity, @time }
+
+  _shouldClamp: ->
+    if @clamp and @tension isnt 0
+      if @startValue < @endValue
+        return @value > @endValue
+      return @value < @endValue
+    return no
 
 type.overrideMethods
 
@@ -126,22 +127,22 @@ type.overrideMethods
       # The following link explains how RK4 works:
       # http://gafferongames.com/game-physics/integration-basics/
       aVelocity = velocity
-      aAcceleration = @_tension * (@endValue - tempValue) - @_friction * tempVelocity
+      aAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
       tempValue = value + aVelocity * step / 2
       tempVelocity = velocity + aAcceleration * step / 2
 
       bVelocity = velocity
-      bAcceleration = @_tension * (@endValue - tempValue) - @_friction * tempVelocity
+      bAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
       tempValue = value + bVelocity * step / 2
       tempVelocity = velocity + bAcceleration * step / 2
 
       cVelocity = velocity
-      cAcceleration = @_tension * (@endValue - tempValue) - @_friction * tempVelocity
+      cAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
       tempValue = value + cVelocity * step / 2
       tempVelocity = velocity + cAcceleration * step / 2
 
       dVelocity = velocity
-      dAcceleration = @_tension * (@endValue - tempValue) - @_friction * tempVelocity
+      dAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
       tempValue = value + dVelocity * step / 2
       tempVelocity = velocity + dAcceleration * step / 2
 
@@ -160,16 +161,9 @@ type.overrideMethods
   __didUpdate: (value) ->
 
     # A listener might have stopped us in '_onUpdate'.
-    return unless @hasEnded
+    return if @hasEnded
 
-    shouldClamp = no
-    if @clamp and @_tension isnt 0
-      if @startValue < @endValue
-        shouldClamp = @value > @endValue
-      else shouldClamp = @value < @endValue
-
-    if shouldClamp
-      return @finish()
+    return @finish() if @_shouldClamp()
 
     isRestingVelocity = Math.abs(@velocity) <= @restVelocity
     isRestingDistance = Math.abs(@endValue - @value) <= @restDistance
@@ -178,7 +172,7 @@ type.overrideMethods
 
   __didEnd: (finished) ->
     return unless finished
-    return if @_tension is 0
+    return if @tension is 0
     @_onUpdate @endValue
 
 module.exports = SpringAnimation = type.build()

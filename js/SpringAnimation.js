@@ -1,8 +1,6 @@
-var Animation, SpringAnimation, SpringConfig, Type, fromArgs, type;
+var Animation, SpringAnimation, SpringConfig, Type, type;
 
 Animation = require("Animated").Animation;
-
-fromArgs = require("fromArgs");
 
 Type = require("Type");
 
@@ -12,30 +10,26 @@ type = Type("SpringAnimation");
 
 type.inherits(Animation);
 
-type.optionTypes = {
-  endValue: Number,
-  velocity: Number,
-  bounciness: Number.Maybe,
-  speed: Number.Maybe,
-  tension: Number.Maybe,
-  friction: Number.Maybe,
-  clamp: Boolean,
-  restDistance: Number,
-  restVelocity: Number
-};
+type.defineOptions({
+  endValue: Number.isRequired,
+  velocity: Number.isRequired,
+  bounciness: Number,
+  speed: Number,
+  tension: Number,
+  friction: Number,
+  clamp: Boolean.withDefault(false),
+  restDistance: Number.withDefault(0.01),
+  restVelocity: Number.withDefault(0.001)
+});
 
-type.optionDefaults = {
-  clamp: false,
-  restDistance: 0.01,
-  restVelocity: 0.001
-};
-
-type.defineFrozenValues({
-  endValue: fromArgs("endValue"),
-  startVelocity: fromArgs("velocity"),
-  clamp: fromArgs("clamp"),
-  restDistance: fromArgs("restDistance"),
-  restVelocity: fromArgs("restVelocity")
+type.defineFrozenValues(function(options) {
+  return {
+    endValue: options.endValue,
+    startVelocity: options.velocity,
+    clamp: options.clamp,
+    restDistance: options.restDistance,
+    restVelocity: options.restVelocity
+  };
 });
 
 type.defineValues({
@@ -56,8 +50,8 @@ type.initInstance(function(options) {
   } else {
     spring = SpringConfig.fromOrigamiTensionAndFriction(options.tension != null ? options.tension : options.tension = 40, options.friction != null ? options.friction : options.friction = 7);
   }
-  this._tension = spring.tension;
-  return this._friction = spring.friction;
+  this.tension = spring.tension;
+  return this.friction = spring.friction;
 });
 
 type.defineMethods({
@@ -67,6 +61,15 @@ type.defineMethods({
       velocity: this.velocity,
       time: this.time
     };
+  },
+  _shouldClamp: function() {
+    if (this.clamp && this.tension !== 0) {
+      if (this.startValue < this.endValue) {
+        return this.value > this.endValue;
+      }
+      return this.value < this.endValue;
+    }
+    return false;
   }
 });
 
@@ -102,19 +105,19 @@ type.overrideMethods({
     for (i = j = 0, ref1 = numSteps; 0 <= ref1 ? j < ref1 : j > ref1; i = 0 <= ref1 ? ++j : --j) {
       step = TIMESTEP_MSEC / 1000;
       aVelocity = velocity;
-      aAcceleration = this._tension * (this.endValue - tempValue) - this._friction * tempVelocity;
+      aAcceleration = this.tension * (this.endValue - tempValue) - this.friction * tempVelocity;
       tempValue = value + aVelocity * step / 2;
       tempVelocity = velocity + aAcceleration * step / 2;
       bVelocity = velocity;
-      bAcceleration = this._tension * (this.endValue - tempValue) - this._friction * tempVelocity;
+      bAcceleration = this.tension * (this.endValue - tempValue) - this.friction * tempVelocity;
       tempValue = value + bVelocity * step / 2;
       tempVelocity = velocity + bAcceleration * step / 2;
       cVelocity = velocity;
-      cAcceleration = this._tension * (this.endValue - tempValue) - this._friction * tempVelocity;
+      cAcceleration = this.tension * (this.endValue - tempValue) - this.friction * tempVelocity;
       tempValue = value + cVelocity * step / 2;
       tempVelocity = velocity + cAcceleration * step / 2;
       dVelocity = velocity;
-      dAcceleration = this._tension * (this.endValue - tempValue) - this._friction * tempVelocity;
+      dAcceleration = this.tension * (this.endValue - tempValue) - this.friction * tempVelocity;
       tempValue = value + dVelocity * step / 2;
       tempVelocity = velocity + dAcceleration * step / 2;
       dxdt = (aVelocity + 2 * (bVelocity + cVelocity) + dVelocity) / 6;
@@ -128,19 +131,11 @@ type.overrideMethods({
     return value;
   },
   __didUpdate: function(value) {
-    var isRestingDistance, isRestingVelocity, shouldClamp;
-    if (!this.hasEnded) {
+    var isRestingDistance, isRestingVelocity;
+    if (this.hasEnded) {
       return;
     }
-    shouldClamp = false;
-    if (this.clamp && this._tension !== 0) {
-      if (this.startValue < this.endValue) {
-        shouldClamp = this.value > this.endValue;
-      } else {
-        shouldClamp = this.value < this.endValue;
-      }
-    }
-    if (shouldClamp) {
+    if (this._shouldClamp()) {
       return this.finish();
     }
     isRestingVelocity = Math.abs(this.velocity) <= this.restVelocity;
@@ -153,7 +148,7 @@ type.overrideMethods({
     if (!finished) {
       return;
     }
-    if (this._tension === 0) {
+    if (this.tension === 0) {
       return;
     }
     return this._onUpdate(this.endValue);
