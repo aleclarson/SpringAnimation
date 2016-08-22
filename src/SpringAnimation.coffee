@@ -1,4 +1,6 @@
 
+require "isDev"
+
 {Animation} = require "Animated"
 
 Type = require "Type"
@@ -152,27 +154,32 @@ type.overrideMethods
       value += dxdt * step
       velocity += dvdt * step
 
-    @time = now
-    @value = value
-    @velocity = velocity
+    if isDev
+      @_assertNumber value
+      @_assertNumber velocity
 
-    return value
+    @time = now
+    @velocity = velocity
+    return @value = value
 
   __didUpdate: (value) ->
 
     # A listener might have stopped us in '_onUpdate'.
     return if @hasEnded
 
-    return @finish() if @_shouldClamp()
-
-    isRestingVelocity = Math.abs(@velocity) <= @restVelocity
-    isRestingDistance = Math.abs(@endValue - @value) <= @restDistance
-    if isRestingVelocity and isRestingDistance
+    if @_shouldClamp()
       return @finish()
+
+    return if Math.abs(@velocity) > @restVelocity
+    return if Math.abs(@endValue - @value) > @restDistance
+    return @finish()
 
   __didEnd: (finished) ->
     return unless finished
     return if @tension is 0
     @_onUpdate @endValue
+
+  __captureFrame: ->
+    {@time, @value, @velocity}
 
 module.exports = SpringAnimation = type.build()

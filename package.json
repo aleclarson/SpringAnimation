@@ -4,7 +4,8 @@
   "main": "js/SpringAnimation",
   "dependencies": {
     "Animated": "aleclarson/Animated#2.0.0",
-    "Type": "aleclarson/Type#1.1.0"
+    "Type": "aleclarson/Type#1.1.0",
+    "isDev": "aleclarson/isDev#1.0.0"
   },
   "lotus": {
     "plugins": [

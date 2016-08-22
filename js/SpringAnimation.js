@@ -1,5 +1,7 @@
 var Animation, SpringAnimation, SpringConfig, Type, type;
 
+require("isDev");
+
 Animation = require("Animated").Animation;
 
 Type = require("Type");
@@ -125,24 +127,28 @@ type.overrideMethods({
       value += dxdt * step;
       velocity += dvdt * step;
     }
+    if (isDev) {
+      this._assertNumber(value);
+      this._assertNumber(velocity);
+    }
     this.time = now;
-    this.value = value;
     this.velocity = velocity;
-    return value;
+    return this.value = value;
   },
   __didUpdate: function(value) {
-    var isRestingDistance, isRestingVelocity;
     if (this.hasEnded) {
       return;
     }
     if (this._shouldClamp()) {
       return this.finish();
     }
-    isRestingVelocity = Math.abs(this.velocity) <= this.restVelocity;
-    isRestingDistance = Math.abs(this.endValue - this.value) <= this.restDistance;
-    if (isRestingVelocity && isRestingDistance) {
-      return this.finish();
+    if (Math.abs(this.velocity) > this.restVelocity) {
+      return;
     }
+    if (Math.abs(this.endValue - this.value) > this.restDistance) {
+      return;
+    }
+    return this.finish();
   },
   __didEnd: function(finished) {
     if (!finished) {
@@ -152,6 +158,13 @@ type.overrideMethods({
       return;
     }
     return this._onUpdate(this.endValue);
+  },
+  __captureFrame: function() {
+    return {
+      time: this.time,
+      value: this.value,
+      velocity: this.velocity
+    };
   }
 });
 
