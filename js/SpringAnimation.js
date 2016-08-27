@@ -14,7 +14,7 @@ type.inherits(Animation);
 
 type.defineOptions({
   endValue: Number.isRequired,
-  velocity: Number.isRequired,
+  velocity: Number,
   bounciness: Number,
   speed: Number,
   tension: Number,
@@ -76,19 +76,17 @@ type.defineMethods({
 });
 
 type.overrideMethods({
-  __didStart: function() {
+  __didStart: function(config) {
     var internalState;
     if (this.__previousAnimation instanceof SpringAnimation) {
       internalState = this.__previousAnimation.getInternalState();
-      this.time = internalState.time;
-      this.value = internalState.value;
+      this.time = this.startTime = internalState.time;
+      this.value = this.startValue = internalState.value;
       this.velocity = internalState.velocity;
     } else {
-      this.time = this.startTime;
-      this.value = this.startValue;
-    }
-    if (this.startVelocity != null) {
-      this.velocity = this.startVelocity;
+      this.time = this.startTime = Date.now();
+      this.value = this.startValue = config.startValue;
+      this.velocity = this.startVelocity != null ? this.startVelocity : this.startVelocity = config.velocity;
     }
     return this._recomputeValue();
   },

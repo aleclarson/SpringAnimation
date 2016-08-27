@@ -13,7 +13,7 @@ type.inherits Animation
 
 type.defineOptions
   endValue: Number.isRequired
-  velocity: Number.isRequired
+  velocity: Number
   bounciness: Number
   speed: Number
   tension: Number
@@ -81,20 +81,18 @@ type.defineMethods
 
 type.overrideMethods
 
-  __didStart: ->
+  __didStart: (config) ->
 
     if @__previousAnimation instanceof SpringAnimation
       internalState = @__previousAnimation.getInternalState()
-      @time = internalState.time
-      @value = internalState.value
+      @time = @startTime = internalState.time
+      @value = @startValue = internalState.value
       @velocity = internalState.velocity
 
     else
-      @time = @startTime
-      @value = @startValue
-
-    if @startVelocity?
-      @velocity = @startVelocity
+      @time = @startTime = Date.now()
+      @value = @startValue = config.startValue
+      @velocity = @startVelocity ?= config.velocity
 
     @_recomputeValue()
 
