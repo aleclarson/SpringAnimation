@@ -2,14 +2,20 @@
   "name": "SpringAnimation",
   "version": "1.0.0",
   "main": "js/SpringAnimation",
+  "plugins": [
+    "lotus-coffee"
+  ],
+  "scripts": {
+    "build": "coffee -cb -o js src",
+    "postinstall": "postinstall-build js 'npm run build'"
+  },
   "dependencies": {
     "Animated": "aleclarson/Animated#2.0.0",
     "Type": "aleclarson/Type#1.1.0",
-    "isDev": "aleclarson/isDev#1.0.0"
+    "isDev": "aleclarson/isDev#1.0.0",
+    "postinstall-build": "0.2.x"
   },
-  "lotus": {
-    "plugins": [
-      "lotus-coffee"
-    ]
+  "devDependencies": {
+    "coffee-script": "1.9.x"
   }
 }
