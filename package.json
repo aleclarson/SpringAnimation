@@ -12,7 +12,7 @@
   "dependencies": {
     "Animated": "aleclarson/Animated#2.0.0",
     "Type": "aleclarson/Type#1.1.0",
-    "isDev": "aleclarson/isDev#1.0.0",
+    "isDev": "aleclarson/isDev#2.0.0",
     "postinstall-build": "0.2.x"
   },
   "devDependencies": {

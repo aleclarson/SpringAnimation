@@ -1,8 +1,7 @@
 
-require "isDev"
-
 {Animation} = require "Animated"
 
+isDev = require "isDev"
 Type = require "Type"
 
 SpringConfig = require "./SpringConfig"
