@@ -10,7 +10,7 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
-    "Animated": "aleclarson/Animated#2.0.0",
+    "Animated": "aleclarson/Animated#2.1.0",
     "Type": "aleclarson/Type#1.1.0",
     "isDev": "aleclarson/isDev#2.0.0"
   }

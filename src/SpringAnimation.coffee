@@ -11,8 +11,8 @@ type = Type "SpringAnimation"
 type.inherits Animation
 
 type.defineOptions
-  endValue: Number.isRequired
-  velocity: Number
+  toValue: Number.isRequired
+  velocity: Number.withDefault 0
   bounciness: Number
   speed: Number
   tension: Number
@@ -23,9 +23,7 @@ type.defineOptions
 
 type.defineFrozenValues (options) ->
 
-  endValue: options.endValue
-
-  startVelocity: options.velocity
+  toValue: options.toValue
 
   clamp: options.clamp
 
@@ -41,63 +39,72 @@ type.defineValues
 
   velocity: null
 
+  startVelocity: null
+
   tension: null
 
   friction: null
 
 type.initInstance (options) ->
 
-  if options.bounciness? or options.speed?
+  @value = @fromValue
+  @velocity = @startVelocity = options.velocity
 
-    assert (options.tension is undefined) and (options.friction is undefined),
-      reason: "Must only define 'bounciness & speed' or 'tension & friction'!"
-
-    spring = SpringConfig.fromBouncinessAndSpeed(
-      options.bounciness ?= 8
-      options.speed ?= 12
-    )
-
-  else
-    spring = SpringConfig.fromOrigamiTensionAndFriction(
-      options.tension ?= 40
-      options.friction ?= 7
-    )
-
+  spring = @_getSpringConfig options
   @tension = spring.tension
   @friction = spring.friction
 
 type.defineMethods
 
-  getInternalState: ->
-    { @value, @velocity, @time }
+  _getSpringConfig: ->
+
+    if options.bounciness? or options.speed?
+
+      unless options.tension? or options.friction?
+        throw Error "Cannot define bounciness or speed with tension or friction!"
+
+      options.speed ?= 12
+      options.bounciness ?= 8
+      return SpringConfig.fromBouncinessAndSpeed options
+
+    options.tension ?= 40
+    options.friction ?= 7
+    return SpringConfig.fromOrigamiTensionAndFriction options
 
   _shouldClamp: ->
     if @clamp and @tension isnt 0
-      if @startValue < @endValue
-        return @value > @endValue
-      return @value < @endValue
+      if @fromValue < @toValue
+        return @value > @toValue
+      return @value < @toValue
     return no
 
 type.overrideMethods
 
-  __didStart: (config) ->
+  _startAnimation: (animated) ->
 
-    if @__previousAnimation instanceof SpringAnimation
-      internalState = @__previousAnimation.getInternalState()
-      @time = @startTime = internalState.time
-      @value = @startValue = internalState.value
-      @velocity = internalState.velocity
+    anim = @_previousAnimation
+    if anim instanceof SpringAnimation
+      @time = @startTime = anim.time
+      @value = @fromValue = anim.value
+      @velocity = @startVelocity = anim.velocity
 
     else
+      if @fromValue?
+      then animated._updateValue @fromValue
+      else @fromValue = animated._value
+      @value = @fromValue
       @time = @startTime = Date.now()
-      @value = @startValue = config.startValue
-      @velocity = @startVelocity ?= config.velocity
 
-    @_recomputeValue()
+    @__onAnimationStart animated
+    return
+
+  __onAnimationStart: (animated) ->
+    if NativeAnimated.isAvailable
+    then @_startNativeAnimation animated
+    else @_recomputeValue()
 
   __computeValue: ->
-
-    { value, velocity } = this
+    {value, velocity} = this
 
     tempValue = value
     tempVelocity = velocity
@@ -126,22 +133,22 @@ type.overrideMethods
       # The following link explains how RK4 works:
       # http://gafferongames.com/game-physics/integration-basics/
       aVelocity = velocity
-      aAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
+      aAcceleration = @tension * (@toValue - tempValue) - @friction * tempVelocity
       tempValue = value + aVelocity * step / 2
       tempVelocity = velocity + aAcceleration * step / 2
 
       bVelocity = velocity
-      bAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
+      bAcceleration = @tension * (@toValue - tempValue) - @friction * tempVelocity
       tempValue = value + bVelocity * step / 2
       tempVelocity = velocity + bAcceleration * step / 2
 
       cVelocity = velocity
-      cAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
+      cAcceleration = @tension * (@toValue - tempValue) - @friction * tempVelocity
       tempValue = value + cVelocity * step / 2
       tempVelocity = velocity + cAcceleration * step / 2
 
       dVelocity = velocity
-      dAcceleration = @tension * (@endValue - tempValue) - @friction * tempVelocity
+      dAcceleration = @tension * (@toValue - tempValue) - @friction * tempVelocity
       tempValue = value + dVelocity * step / 2
       tempVelocity = velocity + dAcceleration * step / 2
 
@@ -159,7 +166,7 @@ type.overrideMethods
     @velocity = velocity
     return @value = value
 
-  __didUpdate: (value) ->
+  __onAnimationUpdate: (value) ->
 
     # A listener might have stopped us in '_onUpdate'.
     return if @hasEnded
@@ -168,15 +175,27 @@ type.overrideMethods
       return @finish()
 
     return if Math.abs(@velocity) > @restVelocity
-    return if Math.abs(@endValue - @value) > @restDistance
+    return if Math.abs(@toValue - @value) > @restDistance
     return @finish()
 
-  __didEnd: (finished) ->
+  __onAnimationEnd: (finished) ->
     return unless finished
     return if @tension is 0
-    @_onUpdate @endValue
+    @_onUpdate @toValue
 
   __captureFrame: ->
     {@time, @value, @velocity}
+
+  __getNativeConfig: ->
+    return {
+      type: "spring"
+      @toValue
+      @startVelocity
+      @clamp
+      @tension
+      @friction
+      @restDistance
+      @restVelocity
+    }
 
 module.exports = SpringAnimation = type.build()
