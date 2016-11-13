@@ -172,11 +172,11 @@ type.overrideMethods
     return if @hasEnded
 
     if @_shouldClamp()
-      return @finish()
+      return @stop yes
 
     return if Math.abs(@velocity) > @restVelocity
     return if Math.abs(@toValue - @value) > @restDistance
-    return @finish()
+    return @stop yes
 
   __onAnimationEnd: (finished) ->
     return unless finished
