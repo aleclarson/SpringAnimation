@@ -56,7 +56,7 @@ type.initInstance (options) ->
 
 type.defineMethods
 
-  _getSpringConfig: ->
+  _getSpringConfig: (options) ->
 
     if options.bounciness? or options.speed?
 
@@ -99,7 +99,7 @@ type.overrideMethods
     return
 
   __onAnimationStart: (animated) ->
-    if NativeAnimated.isAvailable
+    if @_useNativeDriver
     then @_startNativeAnimation animated
     else @_recomputeValue()
 
