@@ -1,12 +1,12 @@
 
-fromOrigamiTensionAndFriction = (tension, friction) ->
-  tension: tensionFromOrigamiValue tension
-  friction: frictionFromOrigamiValue friction
+fromOrigamiTensionAndFriction = (options) ->
+  tension: tensionFromOrigamiValue options.tension
+  friction: frictionFromOrigamiValue options.friction
 
-fromBouncinessAndSpeed = (bounciness, speed) ->
-  b = normalize bounciness / 1.7, 0, 20
+fromBouncinessAndSpeed = (options) ->
+  b = normalize options.bounciness / 1.7, 0, 20
   b = projectNormal b, 0, 0.8
-  s = normalize speed / 1.7, 0, 20
+  s = normalize options.speed / 1.7, 0, 20
   tension = projectNormal s, 0.5, 200
   friction = quadraticOutInterpolation b, (b3Nobounce tension), 0.01
   fromOrigamiTensionAndFriction tension, friction
