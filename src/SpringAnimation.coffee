@@ -71,11 +71,14 @@ type.defineMethods
     options.friction ?= 7
     return SpringConfig.fromOrigamiTensionAndFriction options
 
-  _shouldClamp: ->
+  _shouldFinish: ->
+    return no if @isDone
     if @clamp and @tension isnt 0
       if @fromValue < @toValue
-        return @value > @toValue
-      return @value < @toValue
+        return yes if @value > @toValue
+      return yes if @value < @toValue
+    if Math.abs(@velocity) <= @restVelocity
+      return Math.abs(@toValue - @value) <= @restDistance
     return no
 
 type.overrideMethods
@@ -167,16 +170,9 @@ type.overrideMethods
     return @value = value
 
   __onAnimationUpdate: (value) ->
-
-    # A listener might have stopped us in '_onUpdate'.
-    return if @hasEnded
-
-    if @_shouldClamp()
-      return @stop yes
-
-    return if Math.abs(@velocity) > @restVelocity
-    return if Math.abs(@toValue - @value) > @restDistance
-    return @stop yes
+    if @_shouldFinish()
+      @stop yes
+    return
 
   __onAnimationEnd: (finished) ->
     return unless finished
