@@ -71,12 +71,15 @@ type.defineMethods
     options.friction ?= 7
     return SpringConfig.fromOrigamiTensionAndFriction options
 
+  _shouldClamp: ->
+    if @fromValue < @toValue
+    then @value > @toValue
+    else @value < @toValue
+
   _shouldFinish: ->
     return no if @isDone
     if @clamp and @tension isnt 0
-      if @fromValue < @toValue
-        return yes if @value > @toValue
-      return yes if @value < @toValue
+      return yes if @_shouldClamp()
     if Math.abs(@velocity) <= @restVelocity
       return Math.abs(@toValue - @value) <= @restDistance
     return no
