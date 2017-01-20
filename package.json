@@ -1,0 +1,10 @@
+{
+  "name": "SpringAnimation",
+  "version": "1.1.1",
+  "main": "js/SpringAnimation",
+  "dependencies": {
+    "Animated": "aleclarson/Animated#3.4.0",
+    "Type": "aleclarson/Type#2.1.0",
+    "isDev": "aleclarson/isDev#2.0.0"
+  }
+}
