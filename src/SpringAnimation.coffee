@@ -10,16 +10,27 @@ type = Type "SpringAnimation"
 
 type.inherits Animation
 
-type.defineOptions
-  toValue: Number.isRequired
-  velocity: Number.withDefault 0
-  bounciness: Number
-  speed: Number
-  tension: Number
-  friction: Number
-  clamp: Boolean.withDefault no
-  restDistance: Number.withDefault 0.01
-  restVelocity: Number.withDefault 0.001
+type.defineArgs ->
+
+  required:
+    toValue: yes
+
+  types:
+    toValue: Number
+    velocity: Number
+    bounciness: Number
+    speed: Number
+    tension: Number
+    friction: Number
+    clamp: Boolean
+    restDistance: Number
+    restVelocity: Number
+
+  defaults:
+    velocity: 0
+    clamp: no
+    restDistance: 0.01
+    restVelocity: 0.001
 
 type.defineFrozenValues (options) ->
 
@@ -71,12 +82,15 @@ type.defineMethods
     options.friction ?= 7
     return SpringConfig.fromOrigamiTensionAndFriction options
 
+  _shouldClamp: ->
+    if @fromValue < @toValue
+    then @value > @toValue
+    else @value < @toValue
+
   _shouldFinish: ->
     return no if @isDone
     if @clamp and @tension isnt 0
-      if @fromValue < @toValue
-        return yes if @value > @toValue
-      return yes if @value < @toValue
+      return yes if @_shouldClamp()
     if Math.abs(@velocity) <= @restVelocity
       return Math.abs(@toValue - @value) <= @restDistance
     return no
